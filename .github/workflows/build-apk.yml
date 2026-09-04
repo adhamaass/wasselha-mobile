@@ -24,12 +24,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Dependencies & Setup Capacitor
+      - name: Install Dependencies & Sync
         run: |
           npm install
-          mkdir www
+          mkdir -p www
           echo "<h1>Wasselha</h1>" > www/index.html
-          npx cap add android
+          npx cap add android || true
+          npx cap sync android
 
       - name: Configure Android Permissions
         run: |
