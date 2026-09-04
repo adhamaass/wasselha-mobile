@@ -24,12 +24,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Dependencies & Sync
+      - name: Install Dependencies & Setup Capacitor
         run: |
           npm install
+          npm install -D @capacitor/assets
           mkdir -p www
           echo "<h1>Wasselha</h1>" > www/index.html
           npx cap add android || true
+          mkdir -p assets
+          cp icon.png assets/icon.png || cp icon.png assets/logo.png || true
+          npx @capacitor/assets generate --android || true
           npx cap sync android
 
       - name: Configure Android Permissions
