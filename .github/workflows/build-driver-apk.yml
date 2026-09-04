@@ -46,6 +46,7 @@ jobs:
         run: |
           npm install
           npm install -D @capacitor/assets
+          npm install @onesignal/onesignal-capacitor --save
           mkdir -p www
           echo "<h1>Wasselha Driver</h1>" > www/index.html
           npx cap add android || true
@@ -58,9 +59,9 @@ jobs:
           npx @capacitor/assets generate --android || true
           npx cap sync android
 
-      - name: Configure Android Permissions (Driver GPS & Background)
+      - name: Configure Android Permissions & OneSignal
         run: |
-          sed -i '/<application/i <uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i <uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />\n<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n<uses-permission android:name="android.permission.VIBRATE" />' android/app/src/main/AndroidManifest.xml
 
       - name: Build Driver Debug APK
         run: |
