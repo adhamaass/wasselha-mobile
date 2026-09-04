@@ -31,7 +31,6 @@ jobs:
           npm init -y
           npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest --save
           npm install -D @capacitor/assets
-          npm install @onesignal/onesignal-capacitor --legacy-peer-deps || true
 
       - name: Configure Driver Capacitor
         run: |
@@ -47,18 +46,13 @@ jobs:
             },
             "android": {
               "allowMixedContent": true
-            },
-            "plugins": {
-              "OneSignal": {
-                "appId": "934b56c0-45fc-497a-95d1-baca0a3e6a75"
-              }
             }
           }
           EOF
 
       - name: Add Android Platform & Assets
         run: |
-          npx cap add android || true
+          npx cap add android
           mkdir -p assets
           if [ -f "driver-icon.png" ]; then
             cp driver-icon.png assets/icon.png
@@ -68,9 +62,28 @@ jobs:
           npx @capacitor/assets generate --android || true
           npx cap sync android
 
-      - name: Configure Android Permissions
+      - name: Add Android Permissions Safely
         run: |
-          sed -i '/<application/i <uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />\n<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n<uses-permission android:name="android.permission.VIBRATE" />' android/app/src/main/AndroidManifest.xml
+          python3 -c "
+          manifest_path = 'android/app/src/main/AndroidManifest.xml'
+          with open(manifest_path, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          permissions = '''
+              <uses-permission android:name=\"android.permission.INTERNET\" />
+              <uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />
+              <uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />
+              <uses-permission android:name=\"android.permission.ACCESS_BACKGROUND_LOCATION\" />
+              <uses-permission android:name=\"android.permission.POST_NOTIFICATIONS\" />
+              <uses-permission android:name=\"android.permission.VIBRATE\" />
+          '''
+          
+          if '<application' in content:
+              new_content = content.replace('<application', permissions + '\n    <application', 1)
+              with open(manifest_path, 'w', encoding='utf-8') as f:
+                  f.write(new_content)
+              print('Permissions injected successfully')
+          "
 
       - name: Build Driver Debug APK
         run: |
