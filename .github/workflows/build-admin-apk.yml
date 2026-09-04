@@ -1,0 +1,75 @@
+name: Build Admin APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Configure Admin Settings
+        run: |
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.wasselha.admin",
+            "appName": "وصلها - الإدارة",
+            "webDir": "www",
+            "server": {
+              "url": "https://admindashboardv2.vercel.app/",
+              "cleartext": false,
+              "androidScheme": "https"
+            },
+            "android": {
+              "allowMixedContent": true
+            }
+          }
+          EOF
+
+      - name: Install Dependencies & Setup Assets
+        run: |
+          npm install
+          npm install -D @capacitor/assets
+          mkdir -p www
+          echo "<h1>Wasselha Admin</h1>" > www/index.html
+          npx cap add android || true
+          mkdir -p assets
+          if [ -f "admin-icon.png" ]; then
+            cp admin-icon.png assets/icon.png
+          else
+            cp icon.png assets/icon.png || true
+          fi
+          npx @capacitor/assets generate --android || true
+          npx cap sync android
+
+      - name: Configure Android Permissions
+        run: |
+          sed -i '/<application/i <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
+
+      - name: Build Admin Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Admin APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wasselha-Admin-App
+          path: android/app/build/outputs/apk/debug/app-debug.apk
