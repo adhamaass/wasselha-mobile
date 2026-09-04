@@ -1,9 +1,9 @@
 {
-  "appId": "com.wasselha.app",
+  "appId": "com.wasselha.client",
   "appName": "وصلها",
   "webDir": "www",
   "server": {
-    "url": "https://example.com",
+    "url": "https://clientapp2.vercel.app/",
     "cleartext": false,
     "androidScheme": "https"
   },
