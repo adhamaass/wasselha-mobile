@@ -1,0 +1,13 @@
+{
+  "appId": "com.wasselha.app",
+  "appName": "وصلها",
+  "webDir": "www",
+  "server": {
+    "url": "https://example.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
